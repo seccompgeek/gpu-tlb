@@ -8,6 +8,16 @@ dumper_path = '../dumper/dumper'
 extractor_path = '../extractor/extractor'
 modifier_path = '../modifier/modifier'
 
+# Detect GPU architecture
+def is_blackwell_gpu():
+    try:
+        result = subprocess.run(['nvidia-smi', '--query-gpu=gpu_name', '--format=csv,noheader'],
+                              capture_output=True, text=True, timeout=5)
+        gpu_name = result.stdout.strip().upper()
+        return 'GB2' in gpu_name or 'BLACKWELL' in gpu_name
+    except:
+        return False
+
 start_va = 0x700000000000
 target = 32
 dummy_va = 0x7f0000000000
@@ -30,7 +40,10 @@ tmp_path = '/tmp/'
 dump = subprocess.Popen([dumper_path, '-b', '0x10000000', '-o', tmp_path + 'dump'])
 dump.wait()
 pagemap_file = open(tmp_path + 'pagemap', 'w')
-extract = subprocess.Popen([extractor_path, tmp_path + 'dump'], stdout=pagemap_file)
+extractor_args = [extractor_path, tmp_path + 'dump']
+if is_blackwell_gpu():
+    extractor_args.append('--blackwell')
+extract = subprocess.Popen(extractor_args, stdout=pagemap_file)
 extract.wait()
 pagemap_file.close()
 a_out.kill()

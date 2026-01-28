@@ -55,10 +55,18 @@ PageDir::constructTrans()
       return false;
     */
     
-    // construct HUGE pages
+    // construct HUGE pages (2MB direct pages in BIG half)
+    // According to NVIDIA UVM driver: flagLarge == 0x01 means this is a PTE (terminal), not PDE
     if (flagSmall == 0x00 && flagLarge == 0x01) {
-      std::uint64_t addrHuge = addrLarge >> 4;
-      std::uint64_t nPhyAddr = addrHuge << 12;
+      // Read full 8-byte PTE for HUGE (2MB) pages
+      std::uint64_t pte = 0;
+      for (int j = 0; j < 8; ++j) {
+        std::uint8_t byteVal = mMemDump.getByte(offsetLarge + j);
+        pte |= ((std::uint64_t)byteVal) << (j * 8);
+      }
+      // NV_MMU_VER3_PTE: ADDRESS at bits [51:12], shift is 12
+      std::uint64_t addr_field = (pte >> 12) & 0xFFFFFFFFFFFULL;
+      std::uint64_t nPhyAddr = addr_field << 12;
       
       std::uint8_t flagHuge = mMemDump.getByte(offsetLarge);
       Trans *next = new Page(mMemDump, nPhyAddr, HUGE, flagHuge);
@@ -109,7 +117,7 @@ PageDir::constructTrans()
 void 
 PageDir::printTrans(std::uint64_t virtAddr)
 {
-  std::cout << "\t\t\t" << std::dec << std::setw(3) << std::setfill(' ')
+  std::cout << "\t\t\t\t" << std::dec << std::setw(3) << std::setfill(' ')
             << (virtAddr >> 29 & 0x1FF) << "-->PD0@0x";
   std::cout << std::hex << std::setw(10) << std::setfill('0');
   std::cout << mPhyAddr << std::endl;

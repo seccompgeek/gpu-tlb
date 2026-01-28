@@ -62,7 +62,7 @@ PageTab::constructTrans()
 void 
 PageTab::printTrans(std::uint64_t virtAddr)
 { 
-  std::cout << "\t\t\t\t" << std::dec << std::setw(3) << std::setfill(' ')
+  std::cout << "\t\t\t\t\t" << std::dec << std::setw(3) << std::setfill(' ')
             << (virtAddr >> 21 & 0x0FF) << "-->PT@0x";
   std::cout << std::hex << std::setw(10) << std::setfill('0')
             << mPhyAddr << std::endl;

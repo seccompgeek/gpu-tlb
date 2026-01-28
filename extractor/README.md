@@ -6,8 +6,14 @@ make
 
 Now, you can use this tool to extract the GPU page tables from a GPU memory dump named "xyz":
 
+For Hopper and earlier architectures (PD3 as top level):
 ```
 ./extractor xyz
+```
+
+For Blackwell architecture (PD4 as top level):
+```
+./extractor xyz --blackwell
 ```
 
 Here's an example of its output:

@@ -49,7 +49,7 @@ Page::printTrans(std::uint64_t virtAddr)
   bool readOnlyFlag = mFlag >> 6 & 0b01;
   bool atomicDisableFlag = mFlag >> 7 & 0b01;
 
-  std::cout << "\t\t\t\t\t" << std::dec << std::setw(3) << std::setfill(' ')
+  std::cout << "\t\t\t\t\t\t" << std::dec << std::setw(3) << std::setfill(' ')
             << (virtAddr >> shBits & mask) << "-->" + sizeStr + "-Page@0x";
   std::cout << std::hex << std::setw(10) << std::setfill('0') << mPhyAddr << "\tVA: 0x";
   std::cout << std::hex << std::setw(10) << std::setfill('0') << virtAddr;
