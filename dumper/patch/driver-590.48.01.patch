@@ -11344,7 +11344,7 @@ index d612daef..648cf01c 100644
  }
  #endif
 diff --git a/kernel-open/nvidia-uvm/uvm_tools.c b/kernel-open/nvidia-uvm/uvm_tools.c
-index 9d4c55be..eeadcc05 100644
+index 9d4c55be..c3e324f4 100644
 --- a/kernel-open/nvidia-uvm/uvm_tools.c
 +++ b/kernel-open/nvidia-uvm/uvm_tools.c
 @@ -20,79 +20,77 @@
@@ -13380,7 +13380,7 @@ index 9d4c55be..eeadcc05 100644
  }
  
  // For non-CPU-to-CPU migrations (or CPU-to-CPU copies using CEs), this event is
-@@ -1191,1673 +1175,1775 @@ static void uvm_tools_record_migration_cpu_to_cpu(uvm_va_space_t *va_space, uvm_
+@@ -1191,1673 +1175,1789 @@ static void uvm_tools_record_migration_cpu_to_cpu(uvm_va_space_t *va_space, uvm_
  // page copies does by block_copy_resident_pages have finished.
  static void uvm_tools_record_migration(uvm_va_space_t *va_space,
                                         uvm_perf_event_t event_id,
@@ -16364,11 +16364,25 @@ index 9d4c55be..eeadcc05 100644
 +// added by kymartin for dumping GPU Page Tables.
 +static void dump_gpu_tree(uvm_page_tree_t* tree, uvm_page_directory_t *dir) {
 +
-+  NvU32 depth = dir->depth;
++  NvU32 depth; 
 +  NvU32 entry_count;
++  NvU32 index;
++  uvm_page_directory_t* child;
 +
++  if(dir == NULL)
++    return;
++
++  depth = dir->depth;
 +  NvU64 phys_alloc_address = dir->phys_alloc.addr.address;
-+  printk(KERN_INFO "Dumping GPU PageTable: PDE%d: 0x%llx\n", depth, phys_alloc_address);
++  printk(KERN_INFO "Dumping GPU PageTable: PDE%d: 0x%llx Aperture: %d\n", depth, phys_alloc_address, dir->phys_alloc.addr.aperture);
++  
++  if(depth < 5) {
++    entry_count = tree->hal->entries_per_index(depth) << tree->hal->index_bits(depth, UVM_PAGE_SIZE_4K);
++    for(index = 0; index < entry_count; index++) {
++      child = dir->entries[index];
++      dump_gpu_tree(tree, child);
++    }
++  }
 +}
 +
 +// added by kymartin for dumping GPU memory.
@@ -16431,7 +16445,7 @@ index 9d4c55be..eeadcc05 100644
 +  gpu_addr = uvm_mem_gpu_address_physical(gpu_mem, gpu, 0, gpu_mem->chunk_size);
 +  printk("GPU mem address 0x%11x\n", gpu_addr.address);
 +
-+  dump_gpu_tree(gpu->address_space_tree, gpu->address_space_tree.root)
++  dump_gpu_tree(&gpu->address_space_tree, gpu->address_space_tree.root);
 +  // dump GPU memory from the base_addr for the size of dump_size;
 +  gpu_addr.address = base_addr;
 +  printk(KERN_INFO "uvm_api_dump_gpu_memory instance phys start: 0x%11x, "
