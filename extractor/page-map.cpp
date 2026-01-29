@@ -36,6 +36,8 @@ PageMap::constructTrans()
       std::uint8_t byteVal = mMemDump.getByte(offset + j);
       entry |= ((std::uint64_t)byteVal) << (j * 8);
     }
+
+    std::cout << "Entry " << i << ": 0x" << std::hex << entry << std::dec << std::endl;
     
     // Parse as NV_MMU_VER3 format
     // bit[0]=IS_PTE (0=PDE), bits[2:1]=APERTURE, bits[51:12]=ADDRESS
@@ -47,7 +49,7 @@ PageMap::constructTrans()
     std::uint64_t nPhyAddr = addr << 12;
     
     // Skip if it's a PTE (should be PDE), or aperture is invalid, or no address
-    if (is_pte || aperture == 0 || nPhyAddr == 0)
+    if (is_pte || aperture == 0)
       continue;
     
     // construct the next-level trans
