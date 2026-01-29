@@ -37,7 +37,8 @@ PageMap::constructTrans()
       entry |= ((std::uint64_t)byteVal) << (j * 8);
     }
 
-    std::cout << "Entry " << i << ": 0x" << std::hex << entry << std::dec << std::endl;
+    if(entry != 0)
+      std::cout << "Entry " << i << ": 0x" << std::hex << entry << std::dec << std::endl;
     
     // Parse as NV_MMU_VER3 format
     // bit[0]=IS_PTE (0=PDE), bits[2:1]=APERTURE, bits[51:12]=ADDRESS
