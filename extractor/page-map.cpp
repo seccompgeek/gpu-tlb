@@ -50,8 +50,14 @@ PageMap::constructTrans()
     std::uint64_t nPhyAddr = addr << 12;
     
     // Skip if it's a PTE (should be PDE), or aperture is invalid, or no address
-    if (is_pte || aperture == 0)
+    if (aperture == 0)
       continue;
+    else if(is_pte) {
+      Trans* next = new PageDir(mMemDump, nPhyAddr, PT);
+      next->constructTrans();
+      mPageMapEnts[i] = next;
+      continue;
+    }
     
     // construct the next-level trans
     TransType nTransType = mTransType == PD4 ? PD3 :
